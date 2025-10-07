@@ -37,13 +37,7 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            # This will use the dynamic username from the user config
-            users = let
-              currentUser = builtins.getEnv "USER";
-              username = if currentUser != "" then currentUser else "user";
-            in {
-              ${username} = import ./users/kacperlipka.nix;
-            };
+            users.kacperlipka = import ./users/kacperlipka.nix;
             extraSpecialArgs = { inherit inputs; };
           };
         }

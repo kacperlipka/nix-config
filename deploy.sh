@@ -85,8 +85,10 @@ if ! command -v nix &> /dev/null; then
     exit 1
 fi
 
-# Clone or update configuration
-if [ -d "$CONFIG_DIR" ]; then
+# Handle configuration directory
+if [ "$(pwd)" = "$CONFIG_DIR" ]; then
+    echo "Using current directory (already in config directory)"
+elif [ -d "$CONFIG_DIR" ]; then
     echo "Updating existing configuration..."
     cd "$CONFIG_DIR"
     git pull
@@ -105,10 +107,20 @@ if [[ "$SYSTEM" == "macos" ]]; then
     # Check if nix-darwin is already installed
     if command -v darwin-rebuild &> /dev/null; then
         echo "nix-darwin already installed, applying configuration..."
-        darwin-rebuild switch --flake ".#$CONFIG_NAME"
+        echo "Note: This may require sudo password for system-level changes"
+        darwin-rebuild switch --flake ".#$CONFIG_NAME" || {
+            echo "If the command failed due to sudo requirements, please run:"
+            echo "sudo darwin-rebuild switch --flake $(pwd)#$CONFIG_NAME"
+            exit 1
+        }
     else
         echo "Installing nix-darwin and applying configuration..."
-        nix run nix-darwin -- switch --flake ".#$CONFIG_NAME"
+        echo "Note: This may require sudo password for system-level changes"
+        nix run nix-darwin -- switch --flake ".#$CONFIG_NAME" || {
+            echo "If the command failed due to sudo requirements, please run:"
+            echo "sudo nix run nix-darwin -- switch --flake $(pwd)#$CONFIG_NAME"
+            exit 1
+        }
     fi
 
 elif [[ "$SYSTEM" == "linux" ]]; then

@@ -1,18 +1,12 @@
 { config, pkgs, lib, inputs, ... }:
 
-let
-  # Get the current user dynamically
-  currentUser = builtins.getEnv "USER";
-  # Fallback to a default if USER env var is not set
-  username = if currentUser != "" then currentUser else "user";
-in
 {
   # System-level configuration for macOS
   system.stateVersion = 5;
 
-  # Dynamic user account - creates user entry for whoever is running this
-  users.users.${username} = {
-    home = "/Users/${username}";
+  # User account for kacperlipka
+  users.users.kacperlipka = {
+    home = "/Users/kacperlipka";
     shell = pkgs.bashInteractive;
   };
 
@@ -37,11 +31,11 @@ in
   # link apps to ~/Applications
   environment.pathsToLink = [ "/Applications" ];
 
-  # Nix configuration - trust the current user dynamically
+  # Nix configuration
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" username ];
+      trusted-users = [ "root" "kacperlipka" ];
     };
   };
 

@@ -1,29 +1,22 @@
 { config, pkgs, lib, ... }:
 
-let
-  # Get the current user dynamically
-  currentUser = builtins.getEnv "USER";
-  # Fallback to a default if USER env var is not set
-  username = if currentUser != "" then currentUser else "user";
-in
 {
   imports = [
     ../home/shell
     ../home/packages
   ];
 
-  # Git configuration - keep your identity
+  # Git configuration
   programs.git = {
     enable = true;
     userName = "kacperlipka";
     userEmail = "kacper.lipka.02@gmail.com";
   };
 
-  # Home Manager needs a bit of information about you and the
-  # paths it should manage - adapt to current user
+  # Home Manager configuration
   home = {
-    username = username;
-    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+    username = "kacperlipka";
+    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/kacperlipka" else "/home/kacperlipka";
     stateVersion = "24.05"; # Please read the comment before changing
   };
 
