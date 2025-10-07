@@ -1,153 +1,28 @@
 #!/bin/bash
 set -e
 
-# Portable Nix deployment script
-# Automatically detects macOS or Linux and configures the environment for any user
-# Uses Determinate Systems installer for reliable Nix installation
-
-REPO_URL="https://github.com/kacperlipka/nix-config.git"
 CONFIG_DIR="$HOME/.config/nix-config"
 
-echo "Starting portable Nix deployment..."
-
-# Detect operating system
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    SYSTEM="macos"
-    CONFIG_NAME="macos"
-    echo "Detected macOS"
-    echo "Current user: $USER"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    SYSTEM="linux"
-    CONFIG_NAME="linux"
-    echo "Detected Linux"
-    echo "Current user: $USER"
-else
-    echo "Error: Unsupported operating system: $OSTYPE"
-    echo "This script supports macOS and Linux only."
-    exit 1
-fi
-
-# Check if Nix is already installed
-if command -v nix &> /dev/null; then
-    echo "Nix is already installed"
-else
-    echo "Installing Nix using Determinate Systems installer..."
-
-    if [[ "$SYSTEM" == "macos" ]]; then
-        echo "Note: Installing Nix in multi-user mode (recommended)"
-        echo "This is secure and won't interfere with your workflow"
-
-        # Install Determinate Nix on macOS (multi-user, but user-friendly)
-        curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --determinate
-
-        # Source nix environment for current session
-        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-            source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-        fi
-
-    elif [[ "$SYSTEM" == "linux" ]]; then
-        echo "Installing Nix in multi-user mode (recommended for reliability)"
-
-        # Install Determinate Nix on Linux (multi-user by default, but can be single-user)
-        curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --determinate
-
-        # Source nix environment for current session
-        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-            source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-        elif [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
-            source "$HOME/.nix-profile/etc/profile.d/nix.sh"
-        fi
-    fi
-
-    echo "Nix installed successfully"
-fi
-
-# Ensure nix command is available
+# Install Nix if not present
 if ! command -v nix &> /dev/null; then
-    echo "Sourcing Nix environment..."
-
-    # Try different possible locations for nix environment
-    if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-        source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-    elif [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
-        source "$HOME/.nix-profile/etc/profile.d/nix.sh"
-    else
-        echo "Error: Cannot find Nix installation"
-        echo "Try opening a new terminal session and running this script again"
-        exit 1
-    fi
+    echo "Installing Nix..."
+    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --determinate
+    source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 fi
 
-# Verify nix is working
-if ! command -v nix &> /dev/null; then
-    echo "Error: Nix command not available after installation"
-    echo "Please open a new terminal session and run this script again"
-    exit 1
-fi
-
-# Handle configuration directory
-if [ "$(pwd)" = "$CONFIG_DIR" ]; then
-    echo "Using current directory (already in config directory)"
-elif [ -d "$CONFIG_DIR" ]; then
-    echo "Updating existing configuration..."
-    cd "$CONFIG_DIR"
-    git pull
+# Clone/update config
+if [ -d "$CONFIG_DIR" ]; then
+    cd "$CONFIG_DIR" && git pull
 else
-    echo "Cloning configuration..."
-    git clone "$REPO_URL" "$CONFIG_DIR"
+    git clone "https://github.com/kacperlipka/nix-config.git" "$CONFIG_DIR"
     cd "$CONFIG_DIR"
 fi
 
-echo "Building configuration for $SYSTEM..."
-
-# Apply configuration based on system
-if [[ "$SYSTEM" == "macos" ]]; then
-    echo "Applying macOS configuration with nix-darwin..."
-
-    # Check if nix-darwin is already installed
-    if command -v darwin-rebuild &> /dev/null; then
-        echo "nix-darwin already installed, applying configuration..."
-        echo "Note: This may require sudo password for system-level changes"
-        darwin-rebuild switch --flake ".#$CONFIG_NAME" || {
-            echo "If the command failed due to sudo requirements, please run:"
-            echo "sudo darwin-rebuild switch --flake $(pwd)#$CONFIG_NAME"
-            exit 1
-        }
-    else
-        echo "Installing nix-darwin and applying configuration..."
-        echo "Note: This may require sudo password for system-level changes"
-        nix run nix-darwin -- switch --flake ".#$CONFIG_NAME" || {
-            echo "If the command failed due to sudo requirements, please run:"
-            echo "sudo nix run nix-darwin -- switch --flake $(pwd)#$CONFIG_NAME"
-            exit 1
-        }
-    fi
-
-elif [[ "$SYSTEM" == "linux" ]]; then
-    echo "Applying Linux configuration with home-manager..."
-
-    # Install and apply home-manager configuration
-    nix run nixpkgs#home-manager -- switch --flake ".#$CONFIG_NAME"
-fi
-
-echo "Configuration applied successfully!"
-echo ""
-echo "Setup complete! Your environment is now configured."
-
-if [[ "$SYSTEM" == "linux" ]]; then
-    echo "Run 'source ~/.bashrc' or start a new shell session to activate all changes."
+# Apply configuration
+if command -v darwin-rebuild &> /dev/null; then
+    darwin-rebuild switch --flake ".#macos"
 else
-    echo "Restart your terminal or start a new shell session to activate all changes."
+    nix run nix-darwin -- switch --flake ".#macos"
 fi
 
-echo ""
-echo "Available commands:"
-if [[ "$SYSTEM" == "macos" ]]; then
-    echo "   darwin-rebuild switch --flake ~/.config/nix-config#$CONFIG_NAME  - Rebuild system"
-else
-    echo "   home-manager switch --flake ~/.config/nix-config#$CONFIG_NAME   - Rebuild config"
-fi
-echo "   nix-rebuild  - Rebuild and switch configuration (alias)"
-echo "   nix-update   - Update flake dependencies (alias)"
-echo ""
-echo "To update configuration in the future, simply run this script again."
+echo "Configuration applied! Restart your terminal."

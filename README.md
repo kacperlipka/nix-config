@@ -1,14 +1,18 @@
-# Portable Nix Configuration
+# macOS Nix Configuration
 
-Portable Nix configuration for macOS and Linux systems using nix-darwin and home-manager.
+Simple, declarative Nix configuration for macOS using nix-darwin with portable devcontainer support.
 
 ## Structure
 
 ```
 ~/.config/nix-config/
-├── flake.nix            # Main entry point - defines configurations
+├── flake.nix            # Main entry point - Darwin-only configuration
 ├── flake.lock           # Locked dependency versions
-├── deploy.sh            # Cross-platform deployment script for macOS and Linux
+├── deploy.sh            # Simplified macOS deployment script
+├── .devcontainer/       # Portable devcontainer configuration
+│   ├── devcontainer.json# VS Code devcontainer settings
+│   ├── devcontainer.nix # Declarative Nix environment with dotfiles
+│   └── setup.sh         # Devcontainer initialization script
 ├── hosts/               # Host-specific system configurations
 │   └── macos/           # macOS system settings (nix-darwin)
 │       └── default.nix  # System packages, fonts, Nix settings
@@ -31,29 +35,28 @@ Portable Nix configuration for macOS and Linux systems using nix-darwin and home
 ## Key Components
 
 ### flake.nix
-The main configuration file that defines:
+Simple Darwin-only configuration that defines:
 - Input sources (nixpkgs, home-manager, nix-darwin)
-- Portable configurations that work with any user:
-  - `macos`: macOS with nix-darwin + home-manager (dynamic user detection)
-  - `linux`: Linux with home-manager only (portable, dynamic user detection)
+- Single `macos` configuration using nix-darwin + home-manager
+- No helper functions - straightforward and maintainable
 
-### Portable Design
-- **No system-specific dependencies**: Ubuntu config uses only home-manager
-- **Locale settings in shell**: Moved from system to user environment
-- **No hostname management**: Removed for better portability
-- **Dynamic user detection**: Automatically adapts to any username
-- **Single user configuration**: Same user config works across all systems and users
+### .devcontainer/
+Portable development environment for any machine:
+- **devcontainer.nix**: Declarative Nix shell with same packages as main config
+- **Dotfiles managed by Nix**: Neovim (LazyVim), tmux, starship, bash configs
+- **Complete portability**: Works on any machine with Nix support
+- **No manual setup**: Everything configured declaratively
 
 ### home/
 Home Manager modules organized by function:
-- **packages/**: Software packages and applications
+- **packages/**: Software packages shared between macOS and devcontainer
 - **shell/**: Terminal, shell, development tools, and locale settings
 
 ## Usage
 
-### Portable Cross-Platform Deployment
+### macOS Deployment
 
-**One-command deployment (automatically detects macOS or Linux):**
+**One-command deployment:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.sh | bash
 ```
@@ -66,18 +69,9 @@ cd ~/.config/nix-config
 ```
 
 **What the deployment script does:**
-- **Detects your operating system** (macOS or Linux)
 - **Installs Nix** using the reliable Determinate Systems installer
-- **Configures Nix** with flakes and Determinate enhancements
-- **Deploys appropriate configuration**:
-  - macOS: nix-darwin + home-manager (full system integration)
-  - Linux: home-manager only (portable, no system changes)
-
-**Installation Details:**
-- **macOS**: Uses multi-user installation (recommended and secure)
-- **Linux**: Uses multi-user installation (more reliable than single-user)
-- **No sudo required** during configuration deployment
-- **Safe and reversible** with built-in uninstallation support
+- **Configures nix-darwin** with home-manager integration
+- **Sets up your entire development environment** automatically
 
 **Regular Operations (after deployment):**
 ```bash
@@ -85,53 +79,82 @@ cd ~/.config/nix-config
 nix-rebuild  # Rebuild and switch configuration
 nix-update   # Update flake dependencies
 
-# Or use full commands:
-# macOS: darwin-rebuild switch --flake ~/.config/nix-config#macos
-# Linux: home-manager switch --flake ~/.config/nix-config#linux
+# Or use full command:
+# darwin-rebuild switch --flake ~/.config/nix-config#macos
 ```
 
-**Additional Operations:**
+### Devcontainer Development
+
+**Use with DevPod (recommended):**
+```bash
+# Install devpod (if not already installed)
+# macOS: brew install devpod
+# Or download from: https://devpod.sh
+
+# Launch devcontainer from this repository
+devpod up https://github.com/kacperlipka/nix-config --ide none
+
+# SSH into the development environment
+ssh nix-config.devpod
+
+# Enter the declarative Nix environment
+cd /workspaces/nix-config
+nix-shell .devcontainer/devcontainer.nix
+```
+
+**Use with VS Code:**
+1. Clone this repository
+2. Open in VS Code
+3. Click "Reopen in Container" when prompted
+4. VS Code will build and start the devcontainer automatically
+
+**What you get in the devcontainer:**
+- **Same packages** as the main macOS configuration
+- **Neovim with LazyVim** (automatically bootstrapped)
+- **Configured dotfiles**: tmux, starship, bash (managed by Nix)
+- **Development tools**: git, gh, nodejs, ripgrep, fd, fzf, bat, eza
+- **Language servers**: nil (Nix), lua-language-server
+- **Completely portable** - works on any machine with Nix support
+
+## Configuration Details
+
+### macOS System Packages
+- **Applications**: alacritty, rectangle
+- **Fonts**: Multiple Nerd Fonts (FiraCode, JetBrains Mono, etc.)
+- **Shell**: bash as default shell
+
+### Development Environment (macOS + Devcontainer)
+- **Development tools**: git, gh, nodejs, neovim, ripgrep, fd, fzf, bat, eza
+- **Shell tools**: starship, tmux, htop, btop, curl, wget, tree, nmap
+- **Language servers**: nil (Nix), lua-language-server
+- **Build tools**: gnumake
+- **Git**: Configured with user credentials
+- **Shell aliases**: Common shortcuts and nix-specific commands
+- **Locale settings**: UTF-8 configured in shell environment
+
+### Nix Settings
+- Flakes and nix-command enabled
+- Unfree packages allowed
+- Determinate Systems enhancements for better performance and reliability
+
+### Key Benefits
+- **Simple architecture**: Darwin-only, no complex helper functions
+- **Declarative dotfiles**: All configurations managed by Nix
+- **Portable development**: Identical environment in devcontainers
+- **Zero manual setup**: Everything configured automatically
+- **Easy maintenance**: Straightforward, readable configuration
+- **Container friendly**: Perfect for remote development and CI/CD
+
+## Maintenance
+
 ```bash
 # Check configuration
 nix flake check ~/.config/nix-config
 
 # Clean old generations
 nix-collect-garbage -d
+sudo nix-collect-garbage -d  # macOS system-wide cleanup
 
-# macOS only - clean system-wide generations
-sudo nix-collect-garbage -d
-
-# Re-run deployment script to update
-curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.sh | bash
+# Update and rebuild
+nix-update && nix-rebuild
 ```
-
-## Configuration Details
-
-### System Packages (macOS only)
-- **Applications**: alacritty, rectangle
-- **Fonts**: Multiple Nerd Fonts (FiraCode, JetBrains Mono, etc.)
-- **Shell**: bash as default shell
-
-### Home Manager Features (All Systems)
-- **Development tools**: git, gh, nodejs, claude-code, neovim
-- **Shell tools**: ripgrep, fd, fzf, bat, eza, starship, tmux
-- **System utilities**: htop, btop, curl, wget, tree, nmap
-- **Git**: Configured with user credentials
-- **Shell aliases**: Common shortcuts and nix-specific commands
-- **Locale settings**: UTF-8 configured in shell environment
-- **Cross-platform**: Same user config works on macOS and Linux
-
-### Nix Settings
-- Flakes and nix-command enabled
-- Unfree packages allowed (macOS system-wide, Linux user-only)
-- Determinate Systems enhancements for better performance and reliability
-
-### Portable Configuration Benefits
-- **Universal deployment**: Single script automatically detects and configures any macOS or Linux system
-- **Dynamic user detection**: Works with any username - no hardcoded user dependencies
-- **Reliable installer**: Uses Determinate Systems' battle-tested Nix installer
-- **Zero configuration**: No manual setup required - everything configured automatically
-- **Consistent environment**: Same shell, tools, and development setup everywhere
-- **Production ready**: Battle-tested configuration used across multiple environments
-- **Easy cleanup**: Built-in uninstallation support (`/nix/nix-installer uninstall`)
-- **Container friendly**: Perfect for dev containers, VMs, and temporary environments

@@ -19,6 +19,7 @@
     yq
     nodejs_24
     claude-code
+    devpod
 
     # Text editors and tools
     ripgrep

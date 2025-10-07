@@ -12,6 +12,14 @@
 
   environment.shells = [ pkgs.bashInteractive ];
 
+  # System-level locale settings
+  environment.variables = {
+    LANG = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
+    LC_MESSAGES = "en_US.UTF-8";
+    LANGUAGE = "en_US.UTF-8:en_US:en";
+  };
+
   fonts = {
     packages = with pkgs; [
       # nerdfonts
