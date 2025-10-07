@@ -1,6 +1,6 @@
 # macOS Nix Configuration
 
-Simple, declarative Nix configuration for macOS using nix-darwin with portable devcontainer support.
+Simple, declarative Nix configuration for macOS using nix-darwin.
 
 ## Structure
 
@@ -9,10 +9,6 @@ Simple, declarative Nix configuration for macOS using nix-darwin with portable d
 ├── flake.nix            # Main entry point - Darwin-only configuration
 ├── flake.lock           # Locked dependency versions
 ├── deploy.sh            # Simplified macOS deployment script
-├── .devcontainer/       # Portable devcontainer configuration
-│   ├── devcontainer.json# VS Code devcontainer settings
-│   ├── devcontainer.nix # Declarative Nix environment with dotfiles
-│   └── setup.sh         # Devcontainer initialization script
 ├── hosts/               # Host-specific system configurations
 │   └── macos/           # macOS system settings (nix-darwin)
 │       └── default.nix  # System packages, fonts, Nix settings
@@ -21,7 +17,7 @@ Simple, declarative Nix configuration for macOS using nix-darwin with portable d
 └── home/                # Home Manager modules
     ├── packages/        # Package definitions
     │   ├── default.nix  # Imports other package modules
-    │   ├── base.nix     # Base packages for all systems
+    │   ├── base.nix     # Base packages for development
     │   └── git.nix      # Git-specific package configuration
     └── shell/           # Shell and terminal configurations
         ├── default.nix  # Imports all shell modules + locale settings
@@ -40,16 +36,9 @@ Simple Darwin-only configuration that defines:
 - Single `macos` configuration using nix-darwin + home-manager
 - No helper functions - straightforward and maintainable
 
-### .devcontainer/
-Portable development environment for any machine:
-- **devcontainer.nix**: Declarative Nix shell with same packages as main config
-- **Dotfiles managed by Nix**: Neovim (LazyVim), tmux, starship, bash configs
-- **Complete portability**: Works on any machine with Nix support
-- **No manual setup**: Everything configured declaratively
-
 ### home/
 Home Manager modules organized by function:
-- **packages/**: Software packages shared between macOS and devcontainer
+- **packages/**: Software packages for development
 - **shell/**: Terminal, shell, development tools, and locale settings
 
 ## Usage
@@ -83,39 +72,6 @@ nix-update   # Update flake dependencies
 # darwin-rebuild switch --flake ~/.config/nix-config#macos
 ```
 
-### Devcontainer Development
-
-**Use with DevPod (recommended):**
-```bash
-# Install devpod (if not already installed)
-# macOS: brew install devpod
-# Or download from: https://devpod.sh
-
-# Launch devcontainer from this repository
-devpod up https://github.com/kacperlipka/nix-config --ide none
-
-# SSH into the development environment
-ssh nix-config.devpod
-
-# Enter the declarative Nix environment
-cd /workspaces/nix-config
-nix-shell .devcontainer/devcontainer.nix
-```
-
-**Use with VS Code:**
-1. Clone this repository
-2. Open in VS Code
-3. Click "Reopen in Container" when prompted
-4. VS Code will build and start the devcontainer automatically
-
-**What you get in the devcontainer:**
-- **Same packages** as the main macOS configuration
-- **Neovim with LazyVim** (automatically bootstrapped)
-- **Configured dotfiles**: tmux, starship, bash (managed by Nix)
-- **Development tools**: git, gh, nodejs, ripgrep, fd, fzf, bat, eza
-- **Language servers**: nil (Nix), lua-language-server
-- **Completely portable** - works on any machine with Nix support
-
 ## Configuration Details
 
 ### macOS System Packages
@@ -123,8 +79,8 @@ nix-shell .devcontainer/devcontainer.nix
 - **Fonts**: Multiple Nerd Fonts (FiraCode, JetBrains Mono, etc.)
 - **Shell**: bash as default shell
 
-### Development Environment (macOS + Devcontainer)
-- **Development tools**: git, gh, nodejs, neovim, ripgrep, fd, fzf, bat, eza
+### Development Environment
+- **Development tools**: git, gh, nodejs, neovim, ripgrep, fd, fzf, bat, eza, devpod
 - **Shell tools**: starship, tmux, htop, btop, curl, wget, tree, nmap
 - **Language servers**: nil (Nix), lua-language-server
 - **Build tools**: gnumake
@@ -139,11 +95,10 @@ nix-shell .devcontainer/devcontainer.nix
 
 ### Key Benefits
 - **Simple architecture**: Darwin-only, no complex helper functions
-- **Declarative dotfiles**: All configurations managed by Nix
-- **Portable development**: Identical environment in devcontainers
+- **Declarative configuration**: All settings managed by Nix
 - **Zero manual setup**: Everything configured automatically
 - **Easy maintenance**: Straightforward, readable configuration
-- **Container friendly**: Perfect for remote development and CI/CD
+- **Development focused**: Includes devpod and modern CLI tools
 
 ## Maintenance
 
