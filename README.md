@@ -33,12 +33,9 @@ Portable Nix configuration for macOS and Linux systems using nix-darwin and home
 ### flake.nix
 The main configuration file that defines:
 - Input sources (nixpkgs, home-manager, nix-darwin)
-- Generic configurations that work with any user:
+- Portable configurations that work with any user:
   - `macos`: macOS with nix-darwin + home-manager (dynamic user detection)
   - `linux`: Linux with home-manager only (portable, dynamic user detection)
-- Backward compatibility configurations:
-  - `macbook-kacperlipka`: Legacy macOS configuration
-  - `kacperlipka@ubuntu`: Legacy Linux configuration
 
 ### Portable Design
 - **No system-specific dependencies**: Ubuntu config uses only home-manager
@@ -54,40 +51,17 @@ Home Manager modules organized by function:
 
 ## Usage
 
-### macOS Setup
+### Portable Cross-Platform Deployment
 
-**Initial Setup (first time):**
+**One-command deployment (automatically detects macOS or Linux):**
 ```bash
-# Install nix-darwin (one-time setup)
-nix run nix-darwin -- switch --flake ~/.config/nix-config#macos
-```
-
-**Regular Operations:**
-```bash
-# Rebuild system
-sudo darwin-rebuild switch --flake ~/.config/nix-config#macos
-
-# Update dependencies
-cd ~/.config/nix-config
-nix flake update
-sudo darwin-rebuild switch --flake .#macos
-```
-
-### Cross-Platform Deployment (macOS and Linux)
-
-**One-command deployment (works on both macOS and Linux):**
-```bash
-# Download and run the cross-platform deployment script
-curl -fsSL https://raw.githubusercontent.com/yourusername/your-repo/main/deploy.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.sh | bash
 ```
 
 **Manual deployment:**
 ```bash
-# Clone this repository
 git clone https://github.com/kacperlipka/nix-config.git ~/.config/nix-config
 cd ~/.config/nix-config
-
-# Run deployment script (auto-detects OS)
 ./deploy.sh
 ```
 
@@ -105,9 +79,9 @@ cd ~/.config/nix-config
 - **No sudo required** during configuration deployment
 - **Safe and reversible** with built-in uninstallation support
 
-**Regular Operations (All Systems):**
+**Regular Operations (after deployment):**
 ```bash
-# Use the convenient aliases (available after deployment):
+# Use the convenient aliases (available in your shell):
 nix-rebuild  # Rebuild and switch configuration
 nix-update   # Update flake dependencies
 
@@ -116,20 +90,19 @@ nix-update   # Update flake dependencies
 # Linux: home-manager switch --flake ~/.config/nix-config#linux
 ```
 
-### Common Operations (All Systems)
-
-**Check configuration:**
+**Additional Operations:**
 ```bash
+# Check configuration
 nix flake check ~/.config/nix-config
-```
 
-**Clean old generations:**
-```bash
-# macOS (system-wide)
+# Clean old generations
+nix-collect-garbage -d
+
+# macOS only - clean system-wide generations
 sudo nix-collect-garbage -d
 
-# All systems (user profiles)
-nix-collect-garbage -d
+# Re-run deployment script to update
+curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.sh | bash
 ```
 
 ## Configuration Details
@@ -153,12 +126,12 @@ nix-collect-garbage -d
 - Unfree packages allowed (macOS system-wide, Linux user-only)
 - Determinate Systems enhancements for better performance and reliability
 
-### Cross-Platform Benefits
-- **Universal deployment**: One script works on macOS and Linux
-- **Reliable installer**: Uses Determinate Systems' battle-tested installer
-- **Appropriate for each OS**: Multi-user on both platforms for better reliability
-- **No system interference**: Linux config uses home-manager only
-- **Instant setup**: One command deployment with all your tools
-- **Consistent environment**: Same shell, tools, and configs everywhere
+### Portable Configuration Benefits
+- **Universal deployment**: Single script automatically detects and configures any macOS or Linux system
+- **Dynamic user detection**: Works with any username - no hardcoded user dependencies
+- **Reliable installer**: Uses Determinate Systems' battle-tested Nix installer
+- **Zero configuration**: No manual setup required - everything configured automatically
+- **Consistent environment**: Same shell, tools, and development setup everywhere
+- **Production ready**: Battle-tested configuration used across multiple environments
 - **Easy cleanup**: Built-in uninstallation support (`/nix/nix-installer uninstall`)
-- **Production ready**: Used by thousands of developers daily
+- **Container friendly**: Perfect for dev containers, VMs, and temporary environments

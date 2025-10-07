@@ -1,5 +1,5 @@
 {
-  description = "Nix configuration for macOS";
+  description = "Portable Nix configuration for macOS and Linux";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -51,19 +51,13 @@
     };
   in
   {
-    # Generic configurations that work for any user
+    # Portable configurations that work for any user
     darwinConfigurations = {
-      # Generic macOS configuration
       "macos" = mkDarwinConfig "aarch64-darwin";
-      # Keep the old name for backward compatibility
-      "macbook-kacperlipka" = mkDarwinConfig "aarch64-darwin";
     };
 
     homeConfigurations = {
-      # Generic Linux configuration
       "linux" = mkUserConfig "x86_64-linux";
-      # Keep the old name for backward compatibility
-      "kacperlipka@ubuntu" = mkUserConfig "x86_64-linux";
     };
   };
 }
