@@ -1,12 +1,12 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, inputs, username, ... }:
 
 {
   # System-level configuration for macOS
   system.stateVersion = 5;
 
-  # User account for kacperlipka
-  users.users.kacperlipka = {
-    home = "/Users/kacperlipka";
+  # User account
+  users.users.${username} = {
+    home = "/Users/${username}";
     shell = pkgs.bashInteractive;
   };
 
@@ -45,7 +45,7 @@
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" "kacperlipka" ];
+      trusted-users = [ "root" username ];
     };
   };
 

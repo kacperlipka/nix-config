@@ -16,11 +16,16 @@
   };
 
   outputs = { self, nixpkgs, home-manager, nix-darwin, ... }@inputs:
+  let
+    # User configuration
+    username = "kacperlipka";
+    email = "kacper.lipka.02@gmail.com";
+  in
   {
     darwinConfigurations = {
       "macos" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
-        specialArgs = { inherit inputs; };
+        specialArgs = { inherit inputs username email; };
         modules = [
           ./hosts/macos
           home-manager.darwinModules.home-manager
@@ -28,7 +33,9 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.kacperlipka = import ./users/kacperlipka.nix;
+              users.${username} = import ./users/mkUser.nix {
+                inherit username email;
+              };
               extraSpecialArgs = { inherit inputs; };
             };
           }
