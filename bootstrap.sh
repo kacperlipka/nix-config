@@ -6,7 +6,7 @@ CONFIG_DIR="$HOME/.config/nix-config"
 # Install Nix if not present
 if ! command -v nix &>/dev/null; then
   echo "Installing Nix..."
-  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --determinate
+  curl -fsSL https://install.determinate.systems/nix | sh -s -- install
   source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 fi
 
@@ -23,4 +23,3 @@ else
 fi
 
 echo "Configuration applied! Restart your terminal."
-
