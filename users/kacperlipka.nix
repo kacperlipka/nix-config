@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ../home/shell
     ../home/packages
   ];
 

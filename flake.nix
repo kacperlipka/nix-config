@@ -1,5 +1,5 @@
 {
-  description = "macOS Nix configuration with nix-darwin";
+  description = "macOS Nix package management with nix-darwin";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -35,5 +35,18 @@
         ];
       };
     };
+
+    # Export packages for devcontainers
+    packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ] (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+      in {
+        # Export the package list for use by devcontainers
+        packages = (import ./home/packages { inherit pkgs; config = {}; lib = nixpkgs.lib; }).home.packages;
+      }
+    );
   };
 }
