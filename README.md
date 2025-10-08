@@ -48,15 +48,15 @@ This is a **portable, cross-platform Nix configuration** designed for:
 - **Integration**: nix-darwin + home-manager for full system management
 - **Features**: System packages, fonts, GUI applications, shell configuration
 
-### Linux (homeConfigurations.linux*)
+### Linux (packages.{arch}-linux)
 - **Targets**: `x86_64-linux`, `aarch64-linux`
-- **Integration**: home-manager only (user-space, no system changes)
-- **Features**: Portable development environment without root privileges
+- **Integration**: Simple package installation with `nix-env` (no home-manager required)
+- **Features**: Portable development environment without root privileges or complex setup
 
-### Containers (homeConfigurations.devcontainer*)
+### Containers (devcontainer packages)
 - **Targets**: `x86_64-linux`, `aarch64-linux`
-- **Integration**: Specialized for container environments
-- **Features**: Avoids user/permission conflicts, optimized for DevPod
+- **Integration**: Package sets optimized for container environments
+- **Features**: Direct installation via nix-env, optimized for DevPod and Ubuntu containers
 
 ## Key Features
 
@@ -86,7 +86,9 @@ curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.
 **What happens:**
 1. **OS Detection**: Automatically determines macOS vs Linux
 2. **Nix Installation**: Uses Determinate Systems installer for reliability
-3. **Configuration Application**: Applies appropriate configuration for your platform
+3. **Configuration Application**:
+   - **macOS**: Full system integration with nix-darwin + home-manager
+   - **Linux**: Simple package installation with `nix-env` (no home-manager)
 4. **Development Setup**: Installs all development tools and shell configuration
 
 ### Manual
@@ -97,17 +99,21 @@ cd ~/.config/nix-config
 # macOS
 darwin-rebuild switch --flake .#macos
 
-# Linux
-home-manager switch --flake .#linux
+# Linux (installs base packages with nix-env)
+nix-env -iA packages.x86_64-linux.base -f .
+# or for ARM: nix-env -iA packages.aarch64-linux.base -f .
 ```
 
 ### Container Development
 For DevPod or other container environments:
 ```bash
-# Inside container
-home-manager switch --flake .#devcontainer
+# Inside container (Ubuntu/Linux containers)
+nix-env -iA packages.x86_64-linux.devcontainer -f .
 # or for ARM containers
-home-manager switch --flake .#devcontainer-aarch64
+nix-env -iA packages.aarch64-linux.devcontainer -f .
+
+# Alternative: install base packages and customize
+nix-env -iA packages.x86_64-linux.base -f .
 ```
 
 ## Package Inventory
