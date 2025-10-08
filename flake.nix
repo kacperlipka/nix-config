@@ -35,29 +35,5 @@
         ];
       };
     };
-
-    homeConfigurations = {
-      # Linux x86_64 configuration
-      "linux" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "x86_64-linux";
-          config.allowUnfree = true;
-        };
-        modules = [
-          ./users/kacperlipka.nix
-        ];
-      };
-
-      # Linux aarch64 configuration (for ARM systems)
-      "linux-aarch64" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "aarch64-linux";
-          config.allowUnfree = true;
-        };
-        modules = [
-          ./users/kacperlipka.nix
-        ];
-      };
-    };
   };
 }
