@@ -38,9 +38,6 @@ with pkgs; [
   nil
   lua-language-server
 
-  # Build tools
-  gnumake
-
   # Shell enhancements
   starship
   tmux
