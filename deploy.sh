@@ -18,11 +18,25 @@ else
     cd "$CONFIG_DIR"
 fi
 
-# Apply configuration
-if command -v darwin-rebuild &> /dev/null; then
-    darwin-rebuild switch --flake ".#macos"
+# Apply configuration based on platform
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS - use nix-darwin
+    if command -v darwin-rebuild &> /dev/null; then
+        darwin-rebuild switch --flake ".#macos"
+    else
+        nix run nix-darwin -- switch --flake ".#macos"
+    fi
 else
-    nix run nix-darwin -- switch --flake ".#macos"
+    # Linux - use nix-env for simple package installation
+    # Detect architecture for correct configuration
+    if [[ $(uname -m) == "aarch64" ]]; then
+        ARCH="aarch64"
+    else
+        ARCH="x86_64"
+    fi
+
+    echo "Installing packages for Linux ${ARCH}..."
+    nix-env -iA "packages.${ARCH}-linux.base" -f .
 fi
 
 echo "Configuration applied! Restart your terminal."

@@ -36,7 +36,7 @@
       };
     };
 
-    # Export packages for devcontainers
+    # Export packages for simple installation with nix-env
     packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ] (system:
       let
         pkgs = import nixpkgs {
@@ -44,8 +44,16 @@
           config.allowUnfree = true;
         };
       in {
-        # Export the package list for use by devcontainers
-        packages = (import ./home/packages { inherit pkgs; config = {}; lib = nixpkgs.lib; }).home.packages;
+        # Package sets for direct installation with nix-env
+        devcontainer = pkgs.buildEnv {
+          name = "devcontainer-packages";
+          paths = import ./home/packages/devcontainer.nix { inherit pkgs; };
+        };
+
+        base = pkgs.buildEnv {
+          name = "base-packages";
+          paths = import ./home/packages/base.nix { inherit pkgs; };
+        };
       }
     );
   };
