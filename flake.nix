@@ -36,25 +36,28 @@
       };
     };
 
-    # Export packages for simple installation with nix-env
-    packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ] (system:
-      let
+    homeConfigurations = {
+      # Linux x86_64 configuration
+      "linux" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
-          inherit system;
+          system = "x86_64-linux";
           config.allowUnfree = true;
         };
-      in {
-        # Package sets for direct installation with nix-env
-        devcontainer = pkgs.buildEnv {
-          name = "devcontainer-packages";
-          paths = import ./home/packages/devcontainer.nix { inherit pkgs; };
-        };
+        modules = [
+          ./users/kacperlipka.nix
+        ];
+      };
 
-        base = pkgs.buildEnv {
-          name = "base-packages";
-          paths = import ./home/packages/base.nix { inherit pkgs; };
+      # Linux aarch64 configuration (for ARM systems)
+      "linux-aarch64" = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = "aarch64-linux";
+          config.allowUnfree = true;
         };
-      }
-    );
+        modules = [
+          ./users/kacperlipka.nix
+        ];
+      };
+    };
   };
 }

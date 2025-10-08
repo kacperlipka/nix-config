@@ -27,16 +27,20 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         nix run nix-darwin -- switch --flake ".#macos"
     fi
 else
-    # Linux - use nix-env for simple package installation
+    # Linux - use home-manager
     # Detect architecture for correct configuration
     if [[ $(uname -m) == "aarch64" ]]; then
-        ARCH="aarch64"
+        CONFIG="linux-aarch64"
     else
-        ARCH="x86_64"
+        CONFIG="linux"
     fi
 
-    echo "Installing packages for Linux ${ARCH}..."
-    nix-env -iA "packages.${ARCH}-linux.base" -f .
+    echo "Applying home-manager configuration for Linux..."
+    if command -v home-manager &> /dev/null; then
+        home-manager switch --flake ".#${CONFIG}"
+    else
+        nix run home-manager -- switch --flake ".#${CONFIG}"
+    fi
 fi
 
 echo "Configuration applied! Restart your terminal."

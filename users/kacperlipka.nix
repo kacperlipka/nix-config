@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ../home/packages
+    ../home/packages/default.nix
   ];
 
   # Git configuration
