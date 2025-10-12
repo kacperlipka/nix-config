@@ -13,9 +13,9 @@ fi
 # Apply configuration
 if [[ "$OSTYPE" == "darwin"* ]]; then
   if command -v darwin-rebuild &>/dev/null; then
-    darwin-rebuild switch --flake ".#kmd_macos"
+    darwin-rebuild switch --flake ".#macos"
   else
-    nix run nix-darwin -- switch --flake ".#kmd_macos"
+    nix run nix-darwin -- switch --flake ".#macos"
   fi
 else
   echo "Unsupported platform"
