@@ -16,7 +16,7 @@ with pkgs; [
   terraform
   argocd
   kubecolor
-  blesh
+  lazygit
 
   # Development tools
   git
