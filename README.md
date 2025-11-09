@@ -1,196 +1,161 @@
-# Portable Nix Configuration
+# Nix Configuration
 
-Cross-platform, declarative Nix configuration for macOS with parametrized user support.
+Declarative Nix configuration for macOS using nix-darwin and home-manager.
 
 ## Quick Start
 
-**One-command deployment (macOS only):**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.sh | bash
-```
-
-**Regular management (after deployment):**
-```bash
-nix-rebuild    # Rebuild and switch configuration
-nix-update     # Update flake dependencies
-```
-
-## Architecture Overview
-
-This is a **parametrized Nix configuration** designed for:
-- **macOS**: Full system integration with nix-darwin + home-manager
-- **User-agnostic**: Easily customizable for different users via parameter changes
-
-## Project Structure
-
-```
-~/.config/nix-config/
-├── flake.nix              # Multi-platform configurations and package exports
-├── flake.lock             # Locked dependency versions
-├── deploy.sh              # Cross-platform deployment with OS detection
-├── hosts/                 # Platform-specific system configurations
-│   └── macos/             # macOS system settings (nix-darwin)
-│       └── default.nix    # System packages, fonts, Nix settings
-├── users/                 # User-specific configurations
-│   ├── mkUser.nix         # Parametrized user configuration function
-│   └── kacperlipka.nix    # Legacy user profile (can be removed)
-└── home/                  # Home Manager modules
-    └── packages/          # Package definitions
-        ├── default.nix    # Git configuration and package imports
-        └── base.nix       # Core development packages
-```
-
-## Configuration
-
-### macOS (darwinConfigurations.macos)
-- **Target**: `aarch64-darwin` (Apple Silicon)
-- **Integration**: nix-darwin + home-manager for full system management
-- **Features**: System packages, fonts, GUI applications, shell configuration
-- **User Support**: Parametrized username and email configuration
-
-## Key Features
-
-### Parametrized Configuration
-- **User-agnostic**: Username and email configurable via parameters
-- **Dynamic paths**: Automatically adapts home directory paths for any user
-- **Reusable**: Easy to fork and customize for different users
-
-### Development Environment
-- **Core tools**: git, nodejs, neovim, ripgrep, fzf, bat, eza, claude-code
-- **Language servers**: nil (Nix), lua-language-server for enhanced editing
-- **Shell enhancements**: starship prompt, tmux, comprehensive bash configuration
-
-### Package Management
-- **Base packages**: Consistent development tools (`home/packages/base.nix`)
-- **Font management**: Nerd Fonts installed system-wide
-- **Unfree packages**: Properly configured for GUI applications and development tools
-
-## Deployment
-
-### Automatic (Recommended)
-```bash
-curl -fsSL https://raw.githubusercontent.com/kacperlipka/nix-config/main/deploy.sh | bash
-```
-
-**What happens:**
-1. **OS Detection**: Verifies macOS environment
-2. **Nix Installation**: Uses Determinate Systems installer for reliability
-3. **Configuration Application**: Full system integration with nix-darwin + home-manager
-4. **Development Setup**: Installs all development tools and shell configuration
-
-### Manual
-```bash
+# Clone repository
 git clone https://github.com/kacperlipka/nix-config.git ~/.config/nix-config
 cd ~/.config/nix-config
 
-# macOS
-darwin-rebuild switch --flake .#macos
+# Run deployment
+./bootstrap.sh
 ```
 
-## Package Inventory
+## System Requirements
 
-### Core Development Tools
-- **Version Control**: git, gh (GitHub CLI)
-- **Programming**: nodejs_24, claude-code
-- **Text Editing**: neovim with LazyVim, language servers (nil, lua-language-server)
-- **Search & Navigation**: ripgrep, fd, fzf, bat, eza
+- macOS (Apple Silicon - aarch64-darwin)
+- Nix (installed automatically via Determinate Systems installer)
 
-### System Utilities
-- **Network**: curl, wget, nmap, netcat
-- **Shell**: bash (with starship prompt), tmux
-- **Utilities**: tree
+## Architecture
 
-### macOS-Specific
-- **GUI Applications**: alacritty (terminal), rectangle (window management)
-- **System Integration**: Full nix-darwin integration
-- **Font Management**: System-wide Nerd Font installation
+### Components
 
-### Git Configuration
-Pre-configured with:
-- User credentials and sensible defaults
-- Useful aliases (st, co, br, ci, lg, etc.)
-- Neovim as default editor
-- Enhanced diff and merge tools
+- **nix-darwin**: System-level macOS integration
+- **home-manager**: User environment and dotfile management
+- **nixpkgs**: Package source (nixos-unstable channel)
 
-## Architecture Benefits
+### Directory Structure
 
-### Portability
-- **User-agnostic**: Dynamically detects usernames and home directories
-- **Platform-aware**: Different optimizations for macOS, Linux, and containers
-- **No root required**: Linux configurations work in user-space only
-
-### Maintainability
-- **Modular design**: Packages organized by function and platform
-- **Consistent patterns**: Same base packages across all environments
-- **Single source of truth**: All configuration managed declaratively
-
-### Development Focus
-- **Modern tooling**: Includes latest development tools and editors
-- **Container-ready**: Special configurations for DevPod and containerized development
-- **Language support**: Pre-configured language servers and development environment
-
-## Daily Usage
-
-### After Installation
-All commands available in your shell:
-```bash
-nix-rebuild    # Rebuild and switch configuration
-nix-update     # Update flake dependencies
+```
+.
+├── flake.nix              # Flake configuration with inputs and outputs
+├── flake.lock             # Locked dependency versions
+├── bootstrap.sh           # Automated deployment script
+├── hosts/
+│   └── macos/
+│       └── default.nix    # System configuration (fonts, environment, packages)
+├── users/
+│   └── mkUser.nix         # User configuration factory function
+└── home/
+    └── packages/
+        ├── default.nix    # Git configuration and package imports
+        └── base.nix       # Package list
 ```
 
-### Maintenance Commands
+## Configuration Details
+
+### User Parameters
+
+Configured in `flake.nix`:
+
+- Username: `kacperlipka`
+- Email: `kacper.lipka.02@gmail.com`
+
+### System Configuration
+
+Defined in `hosts/macos/default.nix`:
+
+- Default shell: Bash with completion
+- Locale: en_US.UTF-8
+- GUI applications: Alacritty, Rectangle
+- Experimental Nix features: flakes, nix-command
+- Unfree packages: Enabled
+
+### Installed Packages
+
+Core utilities:
+
+- curl, wget, unzip, zip, tree, htop, btop
+
+Cloud and infrastructure:
+
+- azure-cli, kubectl, kubectx, kubernetes-helm, terraform, argocd, kubecolor, ansible
+
+Development tools:
+
+- git, gh, jq, yq, nodejs_24, claude-code, devpod, lazygit, pyenv
+
+Text editors and search:
+
+- neovim, ripgrep, fd, fzf, bat, eza
+
+Rust toolchain:
+
+- rustc, cargo
+
+Shell enhancements:
+
+- starship, tmux
+
+## Deployment
+
+### Automatic
+
 ```bash
+./bootstrap.sh
+```
+
+The script performs the following:
+
+1. Installs Nix using Determinate Systems installer (if not present)
+2. Applies darwin configuration using `darwin-rebuild switch --flake ".#macos"`
+
+### Manual
+
+```bash
+# With darwin-rebuild available
+darwin-rebuild switch --flake ~/.config/nix-config#macos
+
+# Without darwin-rebuild
+nix run nix-darwin -- switch --flake ~/.config/nix-config#macos
+```
+
+## Maintenance
+
+```bash
+# Update flake inputs
+nix flake update ~/.config/nix-config
+
+# Rebuild system
+darwin-rebuild switch --flake ~/.config/nix-config#macos
+
 # Validate configuration
 nix flake check ~/.config/nix-config
 
-# Clean old generations
+# Garbage collection
 nix-collect-garbage -d
-# macOS system-wide cleanup:
 sudo nix-collect-garbage -d
-
-# Update dependencies and rebuild
-nix-update && nix-rebuild
 ```
-
-### Development Workflow
-- **Neovim**: Pre-configured with LazyVim for immediate productivity
-- **Shell**: Enhanced with starship prompt, useful aliases, UTF-8 locale
-- **Git**: Ready to use with sensible defaults and helpful aliases
 
 ## Customization
 
-To modify this configuration for your use:
+### Modify User Parameters
 
-### Option 1: Quick Parameter Change
-1. **Fork the repository**
-2. **Update user parameters** in `flake.nix`:
-   ```nix
-   let
-     # User configuration - CHANGE THESE
-     username = "yourusername";
-     email = "your.email@example.com";
-   ```
-3. **Deploy your changes**:
-   ```bash
-   git clone https://github.com/yourusername/nix-config.git ~/.config/nix-config
-   cd ~/.config/nix-config
-   nix-rebuild
-   ```
+Edit `flake.nix`:
 
-### Option 2: Multiple Users
-Create different configurations in `flake.nix`:
 ```nix
-darwinConfigurations = {
-  "user1-macos" = darwinSystem {
-    # ... with user1 parameters
-  };
-  "user2-macos" = darwinSystem {
-    # ... with user2 parameters
-  };
-};
+let
+  username = "your-username";
+  email = "your-email@example.com";
+in
 ```
 
-### Additional Customization
-- **Modify packages** in `home/packages/base.nix`: Add or remove development tools
-- **Adjust system settings** in `hosts/macos/default.nix`: Customize GUI applications and system preferences
-- **Update git configuration** in `users/mkUser.nix`: Modify git settings and aliases
+### Add Packages
+
+Edit `home/packages/base.nix` and add package names to the list.
+
+### Modify System Settings
+
+Edit `hosts/macos/default.nix` to change system packages, fonts, or environment variables.
+
+### Update Git Configuration
+
+Edit `home/packages/default.nix` to modify git aliases and settings.
+
+## Nix Flake Inputs
+
+- nixpkgs: `github:NixOS/nixpkgs/nixos-unstable`
+- home-manager: `github:nix-community/home-manager`
+- nix-darwin: `github:LnL7/nix-darwin`

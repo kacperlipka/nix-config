@@ -17,6 +17,8 @@ with pkgs; [
   argocd
   kubecolor
   lazygit
+  ansible
+  pyenv
 
   # Development tools
   git
@@ -35,16 +37,9 @@ with pkgs; [
   bat
   eza
 
-  # Network tools
-  nmap
-  netcat
-
-  # System monitoring
-  neofetch
-
-  # Language servers for Neovim
-  nil
-  lua-language-server
+  # Rust toolchain
+  rustc
+  cargo
 
   # Shell enhancements
   starship
