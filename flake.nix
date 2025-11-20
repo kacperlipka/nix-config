@@ -20,9 +20,30 @@
     # User configuration
     username = "kacperlipka";
     email = "kacper.lipka.02@gmail.com";
+    kmd_username = "Z6KKI";
+    kmd_email = "kki@kmd.dk";
   in
   {
     darwinConfigurations = {
+      "kmd_macos" = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        specialArgs = { inherit inputs; username = kmd_username; email = kmd_email; };
+        modules = [
+          ./hosts/macos
+          home-manager.darwinModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.${kmd_username} = import ./users/mkUser.nix {
+                username = kmd_username;
+                email = kmd_email;
+              };
+              extraSpecialArgs = { inherit inputs; };
+            };
+          }
+        ];
+      };
       "macos" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         specialArgs = { inherit inputs username email; };

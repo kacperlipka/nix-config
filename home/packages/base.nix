@@ -9,7 +9,9 @@ with pkgs; [
   tree
   htop
   btop
-  azure-cli
+  # azure-cli # Install azure-cli with homebrew because of the extensions installation issues
+  # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # brew install azure-cli
   kubectl
   kubectx
   kubernetes-helm
