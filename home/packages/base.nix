@@ -21,6 +21,9 @@ with pkgs; [
   lazygit
   ansible
   pyenv
+  kind
+  istioctl
+  podman
 
   # Development tools
   git
@@ -28,7 +31,7 @@ with pkgs; [
   jq
   yq
   nodejs_24
-  claude-code
+  claude-code # Testing github copilot in the VSC for now
   devpod
 
   # Text editors and tools

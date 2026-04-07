@@ -41,6 +41,8 @@
   environment.systemPackages = with pkgs; [
     alacritty
     rectangle
+    podman-desktop
+    vscode
   ];
 
   # link apps to ~/Applications
